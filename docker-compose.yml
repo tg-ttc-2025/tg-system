@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-17.2-alpine3.20}
+    container_name: ${POSTGRES_CONTAINER_NAME:-tg-postgres}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tg_database}
+      POSTGRES_USER: ${POSTGRES_USER:-tg_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tg_password}
+      TZ: ${TIMEZONE:-Asia/Bangkok}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - tg_postgres_data:/var/lib/postgresql/data
+      - ./schema/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./schema/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    networks:
+      - tg-network
+
+  minio:
+    image: minio/minio:${MINIO_VERSION:-latest}
+    container_name: ${MINIO_CONTAINER_NAME:-tg-minio}
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      TZ: ${TIMEZONE:-Asia/Bangkok}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - tg_minio_data:/data
+    networks:
+      - tg-network
+
+volumes:
+  tg_postgres_data:
+  tg_minio_data:
+
+networks:
+  tg-network:
+    driver: bridge

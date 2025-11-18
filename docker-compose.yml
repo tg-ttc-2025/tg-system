@@ -12,7 +12,6 @@ services:
     volumes:
       - tg_postgres_data:/var/lib/postgresql/data
       - ./schema/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./schema/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     networks:
       - tg-network
 
